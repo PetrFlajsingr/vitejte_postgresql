@@ -29,6 +29,8 @@ set(PQXX include/pqxx)
 
 find_library(PQXX_LIB pqxx)
 
+message(${PQXX_LIB})
+
 
 add_executable(vitejte_postgresql_service ${SOURCES})
 #set_target_properties(vitejte_postgresql_service PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
