@@ -54,7 +54,9 @@ argparse::ArgumentParser createArgumentParser() {
 }
 
 void listDevices() {
+  logger->log(spdlog::level::trace, "Vyhledavani Vitejte na siti");
   const auto devices = vitejte::DeviceFinder{}.findDevices();
+  logger->log(spdlog::level::trace, "Vyhledavani dokonceno, pocet nalezenych zarizeni: {}", devices.size());
   fmt::print("Nalezena zarizeni: \n");
   auto i = 0u;
   fmt::print("Index\tID\n");
