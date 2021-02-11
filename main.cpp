@@ -12,31 +12,26 @@
 #include <magic_enum.hpp>
 #include <pqxx/pqxx>
 #include <toml++/toml.h>
+#include "fmt/core.h"
+#include "fmt/ostream.h"
 
 using namespace std::string_literals;
 
-
+/*
 void setup(VitejteEventHandler &handler) {
   auto &commRef = handler.communicator;
 
   const auto devices = commRef.findDevices();
-  std::cout << "Choose device: \n";
-  for (auto i = 0; i < devices.size(); ++i) { std::cout << "[" << i << "]\t" << devices[i] << "\n"; }
 
-  std::string userInput;
-  std::cout << "Choose device by index: ";
-  std::cin >> userInput;
-  const unsigned int index = std::atoi(userInput.c_str());
-  std::cout << "Chosen ID: " << devices[index] << "\n";
-  commRef.setDevice(devices[index]);
-  std::cout << "Set device\n";
-  std::cout << "Registering\n";
+  commRef.setDevice(devices[1]);
+  fmt::print("Set device\n");
+  fmt::print("Registering\n");
   commRef.registerClient(44444);
 
   commRef.setPatientChangeCallback(callbackPatientChange, &handler);
   commRef.setErrorCallback(callbackError, &handler);
   commRef.setStatChangeCallback(callbackStateChange, &handler);
-}
+}*/
 
 enum class AppMode { Devices, Test, Normal, InvalidMode };
 
@@ -60,16 +55,16 @@ argparse::ArgumentParser createArgumentParser() {
 
 void listDevices() {
   const auto devices = vitejte::DeviceFinder{}.findDevices();
-  std::cout << "Nalezena zarizeni: " << std::endl;
+  fmt::print("Nalezena zarizeni: \n");
   auto i = 0u;
+  fmt::print("Index\tID\n");
   for (const auto &device : devices) {
-    std::cout << "#" << i << "\t" << device << std::endl;
+    fmt::print("#{}\t{}\n", i, device);
     ++i;
   }
-  std::cout << "Pro vyber zarizeni jej pridejte do konfiguracniho souboru 'config.toml' ve tvaru:" << std::endl;
-  std::cout << "[vitejte]\n"
-               "id = \"id\""
-            << std::endl;
+  fmt::print("Pro vyber zarizeni jej pridejte do konfiguracniho souboru 'config.toml' ve tvaru:\n");
+  fmt::print("[vitejte]\n"
+               "id = \"id\"\n");
 }
 
 AppMode decideAppMode(argparse::ArgumentParser &args) {
@@ -95,8 +90,8 @@ int main(int argc, char *argv[]) {
   try {
     args.parse_args(argc, argv);
   } catch (const std::runtime_error &err) {
-    std::cout << err.what() << std::endl;
-    std::cout << args;
+    fmt::print("{}\n", err.what());
+    fmt::print("{}", args);
     return 0;
   }
   createLogger(exeFolder, args.get<bool>("--log"));
@@ -111,8 +106,8 @@ int main(int argc, char *argv[]) {
         return run(false, magic_enum::enum_cast<vitejte::SaverType>(args.get<std::string>("--mode")).value(),
                    exeFolder);
       case AppMode::InvalidMode:
-        std::cout << "Mode neni zadan" << std::endl;
-        std::cout << args << std::endl;
+        fmt::print("Mode neni zadan\n");
+        fmt::print("{}", args);
         return 3;
     }
   } catch (pqxx::sql_error const &e) {
@@ -128,7 +123,7 @@ int main(int argc, char *argv[]) {
   setup(main);
 
   std::string input;
-  std::cout << "Type 'exit' to quit, c<id> to clear a patient\n";
+  fmt::print("Type 'exit' to quit, c<id> to clear a patient\n";
   while (input != "exit") {
     std::cin >> input;
     if (input.empty()) { continue; }
@@ -141,7 +136,7 @@ int main(int argc, char *argv[]) {
     }
   }
   main.communicator.unregisterClient();
-  std::cout << "quitting..." << std::endl;
+  fmt::print("quitting..." << std::endl;
   std::this_thread::sleep_for(5s);
   vitejte::freeLibrary();
 */

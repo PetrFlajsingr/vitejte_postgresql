@@ -20,6 +20,8 @@ static inline PtrFncPatientChangedCallbackSet libPatientChangedCallbackSet = nul
 static inline PtrFncErrorCallbackSet libErrorCallbackSet = nullptr;
 static inline PtrFncStateChangeCallbackSet libStateChangeCallbackSet = nullptr;
 
+static inline PtrFncDateTimeAsString libDateTimeAsString = nullptr;
+
 static inline PtrFncFreeString libFreeString = nullptr;
 static inline PtrFncFreeStringArray libFreeStringArray = nullptr;
 static inline PtrFncFindDevices libFindDevices = nullptr;
@@ -57,6 +59,8 @@ inline std::optional<std::string> loadVitejteLibrary(const std::string &path = "
     libErrorCallbackSet = (PtrFncErrorCallbackSet) GetProcAddress(detail::hinstLib, "setErrorCallback");
     libStateChangeCallbackSet =
         (PtrFncStateChangeCallbackSet) GetProcAddress(detail::hinstLib, "setStateChangedCallback");
+
+    libDateTimeAsString = (PtrFncDateTimeAsString) GetProcAddress(detail::hinstLib, "dateTimeAsString");
 
     libFreeString = (PtrFncFreeString) GetProcAddress(detail::hinstLib, "freeString");
     libFreeStringArray = (PtrFncFreeStringArray) GetProcAddress(detail::hinstLib, "freeStringArray");

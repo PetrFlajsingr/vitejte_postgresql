@@ -11,10 +11,17 @@
 #include "range/v3/view/zip.hpp"
 #include <algorithm>
 #include <range/v3/range/conversion.hpp>
+#include "fmt/ostream.h"
 
 namespace vitejte {
 
-void Service::onPatientsChanged() {}
+void Service::onPatientsChanged() {
+  const auto changedPatients = compareAndGetChangedPatients();
+  for (const auto &patient : changedPatients) {
+    fmt::print("{}\n", patient);
+  }
+  fmt::print("_________________________________________");
+}
 
 void Service::onError(const std::string &message) {
   logger->log(spdlog::level::critical, "Error from Vitejte: {}", message);
@@ -29,7 +36,7 @@ std::vector<Patient> Service::getVitejtePatients() {
 }
 std::vector<Patient> Service::compareAndGetChangedPatients() {
   const auto newPatients = getVitejtePatients();
-  const auto result = ranges::views::zip(oldPatients, newPatients) | ranges::views::filter([](const auto &patients) {
+  auto result = ranges::views::zip(oldPatients, newPatients) | ranges::views::filter([](const auto &patients) {
                         const auto &[oldPatient, newPatient] = patients;
                         return oldPatient != newPatient;
                       })
@@ -38,6 +45,9 @@ std::vector<Patient> Service::compareAndGetChangedPatients() {
                         return newPatient;
                       })
       | ranges::to_vector;
+  if (newPatients.size() > oldPatients.size()) {
+    std::ranges::copy(newPatients.begin() + oldPatients.size(), newPatients.end(), std::back_inserter(result));
+  }
   if (!result.empty()) { oldPatients = newPatients; }
   return result;
 }
