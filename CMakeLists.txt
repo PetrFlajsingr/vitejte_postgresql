@@ -3,6 +3,8 @@ project(vitejte_postgresql_service)
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_compile_definitions(FMT_HEADER_ONLY)
+
 set(SOURCES
         lib_interface/Communicator.cpp
         main.cpp
@@ -29,7 +31,7 @@ set(PQXX include/pqxx)
 
 find_library(PQXX_LIB pqxx)
 
-message(${PQXX_LIB})
+
 
 
 add_executable(vitejte_postgresql_service ${SOURCES})

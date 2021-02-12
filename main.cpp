@@ -1,5 +1,5 @@
 #include "DeviceFinder.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "fmt/ostream.h"
 #include "global_logger.h"
 #include "indicators/indeterminate_progress_bar.hpp"
