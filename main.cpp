@@ -67,13 +67,17 @@ int run(bool test, vitejte::SaverType saverType, const std::filesystem::path &ex
 
 void listAndSelectDevice(const std::filesystem::path &exeFolder) {
   if (const auto selectedDevice = listDevices(); selectedDevice.has_value()) {
-    auto config = toml::parse_file((exeFolder / "config.toml").string());
+    auto config = toml::table{};
+    const auto configPath = exeFolder / "config.toml";
+    if (std::filesystem::exists(configPath)) { config = toml::parse_file((configPath).string()); }
     auto vitejteSection = toml::table{};
     if (config.contains("vitejte")) {
       vitejteSection = *config["vitejte"].as_table();
     }
     vitejteSection.insert_or_assign("id", *selectedDevice);
     config.insert_or_assign("vitejte", vitejteSection);
+    auto ofstream = std::ofstream(configPath);
+    ofstream << config;
   }
 }
 
