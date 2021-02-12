@@ -11,6 +11,7 @@ set(SOURCES
         savers.cpp
         Service.cpp
         DeviceFinder.cpp
+        list_devices.cpp
         )
 
 set(HEADERS

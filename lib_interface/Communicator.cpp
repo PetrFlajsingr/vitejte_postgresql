@@ -16,8 +16,16 @@ Patient::Patient(const RawPatient &other)
       zp(other.zp), duvod(other.duvod), idFronty(other.idFronty), state(static_cast<State>(other.state)),
       language(other.language), cardType(static_cast<CardType>(other.cardType)) {}
 
+
 std::ostream &operator<<(std::ostream &stream, const Patient &patient) {
-  return stream << "id: " << patient.id << " registrationTime: " << patient.registrationTime
+  return stream << "id: " << patient.id << " r\n"
+         "namespace vitejte {\n"
+         "\n"
+         "Patient::Patient(const RawPatient &other)\n"
+         "    : id(other.id), registrationTime(other.registrationTime), clearanceTime(other.clearanceTime),\n"
+         "      titlePre(other.titlePre), titlePost(other.titlePost), name(other.name), lastName(other.lastName), rc(other.rc),\n"
+         "      zp(other.zp), duvod(other.duvod), idFronty(other.idFronty), state(static_cast<State>(other.state)),\n"
+         "      language(other.language), cardType(staegistrationTime: " << patient.registrationTime
                 << " clearanceTime: " << patient.clearanceTime << " titlePre: " << patient.titlePre
                 << " titlePost: " << patient.titlePost << " name: " << patient.name << " lastName: " << patient.lastName
                 << " rc: " << patient.rc << " zp: " << patient.zp << " duvod: " << patient.duvod
