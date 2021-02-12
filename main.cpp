@@ -65,6 +65,18 @@ int run(bool test, vitejte::SaverType saverType, const std::filesystem::path &ex
   if (test) { return vitejte::runSavingTest(*dataSaver); }
 }
 
+void listAndSelectDevice(const std::filesystem::path &exeFolder) {
+  if (const auto selectedDevice = listDevices(); selectedDevice.has_value()) {
+    auto config = toml::parse_file((exeFolder / "config.toml").string());
+    auto vitejteSection = toml::table{};
+    if (config.contains("vitejte")) {
+      vitejteSection = *config["vitejte"].as_table();
+    }
+    vitejteSection.insert_or_assign("id", *selectedDevice);
+    config.insert_or_assign("vitejte", vitejteSection);
+  }
+}
+
 int main(int argc, char *argv[]) {
   const auto exeFolder = getExeFolder(argv[0]);
 
@@ -81,7 +93,7 @@ int main(int argc, char *argv[]) {
   const auto appMode = decideAppMode(args);
   try {
     switch (appMode) {
-      case AppMode::Devices: listDevices(); return 0;
+      case AppMode::Devices: listAndSelectDevice(exeFolder); return 0;
       case AppMode::Test:
         return run(true, magic_enum::enum_cast<vitejte::SaverType>(args.get<std::string>("--mode")).value(), exeFolder);
       case AppMode::Normal:

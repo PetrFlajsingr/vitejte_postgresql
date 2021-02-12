@@ -4,9 +4,9 @@
 
 #ifndef VITEJTE_POSTGRESQL_SERVICE__LIST_DEVICES_H
 #define VITEJTE_POSTGRESQL_SERVICE__LIST_DEVICES_H
+#include <optional>
+#include <string>
 
-
-void listDevices();
-
+std::optional<std::string> listDevices();
 
 #endif//VITEJTE_POSTGRESQL_SERVICE__LIST_DEVICES_H

@@ -2,16 +2,16 @@
 // Created by Petr on 11.02.2021.
 //
 #include "list_devices.h"
-#include "global_logger.h"
 #include "DeviceFinder.h"
-#include "indicators/indeterminate_progress_bar.hpp"
-#include "range/v3/view/enumerate.hpp"
-#include <future>
-#include "tabulate/table.hpp"
 #include "fmt/format.h"
 #include "fmt/ostream.h"
+#include "global_logger.h"
+#include "indicators/indeterminate_progress_bar.hpp"
+#include "range/v3/view/enumerate.hpp"
+#include "tabulate/table.hpp"
+#include <future>
 
-void listDevices() {
+std::optional<std::string> listDevices() {
   logger->log(spdlog::level::trace, "Vyhledavani Vitejte na siti");
 
   auto bar = indicators::IndeterminateProgressBar{
@@ -49,7 +49,15 @@ void listDevices() {
     table.add_row({fmt::format("#{}", 1), device});
   }
   fmt::print("{}\n", table);
-  fmt::print("Pro vyber zarizeni jej pridejte do konfiguracniho souboru 'config.toml' ve tvaru:\n");
-  fmt::print("[vitejte]\n"
-             "id = \"id\"\n");
+  fmt::print("Pokud chcete zapsat zarizeni do konfigu, zadejte jeho index: ");
+  auto input = std::string();
+  std::cin >> input;
+
+  try {
+    const auto index = std::stoi(input);
+    return devices[index];
+  } catch (...) {
+    fmt::print("Nebylo vybrano zadne zarizeni\n");
+    return std::nullopt;
+  }
 }
