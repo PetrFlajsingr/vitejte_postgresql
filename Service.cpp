@@ -13,7 +13,7 @@
 #include "range/v3/view/zip.hpp"
 #include <algorithm>
 #include <range/v3/range/conversion.hpp>
-#include <signal.h>
+#include <csignal>
 #include <toml++/toml.h>
 #include "utils.h"
 
@@ -51,7 +51,7 @@ void Service::onError(const std::string &message) {
   logger->log(spdlog::level::critical, "Error from Vitejte: {}", message);
 }
 
-void Service::onStateChange(vitejte::VitejteState state, double until) {
+void Service::onStateChange(vitejte::VitejteState state, [[maybe_unused]] double until) {
   logger->log(spdlog::level::info, "Vitejte state changed: {}", magic_enum::enum_name(state));
 }
 std::vector<Patient> Service::getVitejtePatients() {

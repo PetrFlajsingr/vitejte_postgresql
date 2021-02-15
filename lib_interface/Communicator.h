@@ -58,20 +58,20 @@ class Patient {
   }
 
  private:
-  int id;
-  std::string registrationTime;
-  std::string clearanceTime;
-  std::string titlePre;
-  std::string titlePost;
-  std::string name;
-  std::string lastName;
-  std::string rc;
-  std::string zp;
-  std::string duvod;
-  int idFronty;
-  State state;
-  std::string language;
-  CardType cardType;
+  int id{};
+  std::string registrationTime{};
+  std::string clearanceTime{};
+  std::string titlePre{};
+  std::string titlePost{};
+  std::string name{};
+  std::string lastName{};
+  std::string rc{};
+  std::string zp{};
+  std::string duvod{};
+  int idFronty{};
+  State state{};
+  std::string language{};
+  CardType cardType{};
 };
 
 std::string patientStateToString(Patient::State state);

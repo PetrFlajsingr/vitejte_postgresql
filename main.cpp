@@ -8,12 +8,18 @@
 #include "toml++/toml.h"
 #include "utils.h"
 #include <argparse.hpp>
+#include <csignal>
 #include <filesystem>
 #include <fstream>
 #include <magic_enum.hpp>
 #include <pqxx/pqxx>
 
 using namespace std::string_literals;
+
+void signal_handler(int signal) {
+  logger->log(spdlog::level::critical, "Signal received: {}", signal);
+  std::terminate();
+}
 
 enum class AppMode { Devices, Test, Normal, InvalidMode };
 
@@ -59,9 +65,7 @@ void listAndSelectDevice(const std::filesystem::path &exeFolder) {
     const auto configPath = exeFolder / "config.toml";
     if (std::filesystem::exists(configPath)) { config = toml::parse_file((configPath).string()); }
     auto vitejteSection = toml::table{};
-    if (config.contains("vitejte")) {
-      vitejteSection = *config["vitejte"].as_table();
-    }
+    if (config.contains("vitejte")) { vitejteSection = *config["vitejte"].as_table(); }
     vitejteSection.insert_or_assign("id", *selectedDevice);
     config.insert_or_assign("vitejte", vitejteSection);
     auto ofstream = std::ofstream(configPath);
@@ -69,8 +73,8 @@ void listAndSelectDevice(const std::filesystem::path &exeFolder) {
   }
 }
 
-
 int main(int argc, char *argv[]) {
+
   const auto exeFolder = getExeFolder(argv[0]);
 
   auto args = createArgumentParser();
@@ -82,6 +86,12 @@ int main(int argc, char *argv[]) {
     return 0;
   }
   createLogger(exeFolder, args.get<bool>("--log"));
+  std::signal(SIGINT, signal_handler);
+  std::signal(SIGABRT, signal_handler);
+  std::signal(SIGABRT2, signal_handler);
+  std::signal(SIGFPE, signal_handler);
+  std::signal(SIGSEGV, signal_handler);
+  std::signal(SIGTERM, signal_handler);
 
   const auto appMode = decideAppMode(args);
   try {

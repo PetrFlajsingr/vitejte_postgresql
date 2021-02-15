@@ -13,9 +13,9 @@ class Finally final {
  public:
   explicit Finally(F &&callable) : callable(callable) {}
   Finally(const Finally &) = delete;
-  Finally(Finally &&) = delete;
+  Finally(Finally &&) noexcept = default;
   Finally &operator=(const Finally &) = delete;
-  Finally &operator=(Finally &&) = delete;
+  Finally &operator=(Finally &&) noexcept = default;
   ~Finally() { callable(); }
 
  private:
