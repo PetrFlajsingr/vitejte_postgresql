@@ -10,7 +10,6 @@
 #include <argparse.hpp>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <magic_enum.hpp>
 #include <pqxx/pqxx>
 
