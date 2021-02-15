@@ -51,6 +51,7 @@ int run(bool test, vitejte::SaverType saverType, const std::filesystem::path &ex
   logger->log(spdlog::level::trace, "Creating Service object");
   auto service = vitejte::Service(config, std::move(dataSaver));
   service.run();
+  return 0;
 }
 
 void listAndSelectDevice(const std::filesystem::path &exeFolder) {
