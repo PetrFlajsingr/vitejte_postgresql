@@ -55,7 +55,11 @@ std::optional<std::string> listDevices() {
 
   try {
     const auto index = std::stoi(input);
-    return devices[index];
+    if (index <= 0 || index > devices.size()) {
+      fmt::print("Index mimo rozsah");
+      return std::nullopt;
+    }
+    return devices[index - 1];
   } catch (...) {
     fmt::print("Nebylo vybrano zadne zarizeni\n");
     return std::nullopt;

@@ -1,35 +1,20 @@
 #include "DeviceFinder.h"
+#include "Service.h"
 #include "fmt/format.h"
 #include "fmt/ostream.h"
 #include "global_logger.h"
-#include "savers.h"
-#include "utils.h"
 #include "list_devices.h"
-#include <argparse.hpp>
+#include "savers.h"
 #include "toml++/toml.h"
+#include "utils.h"
+#include <argparse.hpp>
 #include <filesystem>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <magic_enum.hpp>
 #include <pqxx/pqxx>
 
 using namespace std::string_literals;
-
-/*
-void setup(VitejteEventHandler &handler) {
-  auto &commRef = handler.communicator;
-
-  const auto devices = commRef.findDevices();
-
-  commRef.setDevice(devices[1]);
-  fmt::print("Set device\n");
-  fmt::print("Registering\n");
-  commRef.registerClient(44444);
-
-  commRef.setPatientChangeCallback(callbackPatientChange, &handler);
-  commRef.setErrorCallback(callbackError, &handler);
-  commRef.setStatChangeCallback(callbackStateChange, &handler);
-}*/
 
 enum class AppMode { Devices, Test, Normal, InvalidMode };
 
@@ -63,6 +48,9 @@ int run(bool test, vitejte::SaverType saverType, const std::filesystem::path &ex
   auto dataSaver = vitejte::createDataSaver(saverType, config);
 
   if (test) { return vitejte::runSavingTest(*dataSaver); }
+  logger->log(spdlog::level::trace, "Creating Service object");
+  auto service = vitejte::Service(config, std::move(dataSaver));
+  service.run();
 }
 
 void listAndSelectDevice(const std::filesystem::path &exeFolder) {
@@ -80,6 +68,7 @@ void listAndSelectDevice(const std::filesystem::path &exeFolder) {
     ofstream << config;
   }
 }
+
 
 int main(int argc, char *argv[]) {
   const auto exeFolder = getExeFolder(argv[0]);
@@ -115,28 +104,5 @@ int main(int argc, char *argv[]) {
     logger->log(spdlog::level::err, "Error: {}", e.what());
     return 1;
   }
-  /*using namespace std::chrono_literals;
-  Main main;
-
-  setup(main);
-
-  std::string input;
-  fmt::print("Type 'exit' to quit, c<id> to clear a patient\n";
-  while (input != "exit") {
-    std::cin >> input;
-    if (input.empty()) { continue; }
-    if (input[0] == 'c') {
-      const auto idStr = input.substr(1);
-      if (!idStr.empty()) {
-        const auto id = std::atoi(idStr.c_str());
-        main.communicator.clearPatient(id);
-      }
-    }
-  }
-  main.communicator.unregisterClient();
-  fmt::print("quitting..." << std::endl;
-  std::this_thread::sleep_for(5s);
-  vitejte::freeLibrary();
-*/
   return 0;
 }

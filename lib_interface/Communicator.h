@@ -19,7 +19,7 @@ class VitejteException : public std::runtime_error {
   explicit VitejteException(const std::string &arg);
 };
 
-enum class ErrorCodes { OK = 0, InvalidAccess = 1 };
+enum class ErrorCodes { OK = 0, InvalidAccess = 1, ServerAlreadyRunning = 2 };
 ErrorCodes intToErrorCode(int code);
 
 enum class VitejteState { None = 0, Normal, Off, Settings, Break, Message };
@@ -32,8 +32,8 @@ class Patient {
   explicit Patient(const RawPatient &other);
 
   [[nodiscard]] int getId() const;
-  [[nodiscard]] double getRegistrationTime() const;
-  [[nodiscard]] double getClearanceTime() const;
+  [[nodiscard]] const std::string &getRegistrationTime() const;
+  [[nodiscard]] const std::string &getClearanceTime() const;
   [[nodiscard]] const std::string &getTitlePre() const;
   [[nodiscard]] const std::string &getTitlePost() const;
   [[nodiscard]] const std::string &getName() const;
@@ -59,8 +59,8 @@ class Patient {
 
  private:
   int id;
-  double registrationTime;
-  double clearanceTime;
+  std::string registrationTime;
+  std::string clearanceTime;
   std::string titlePre;
   std::string titlePost;
   std::string name;

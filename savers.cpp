@@ -10,6 +10,14 @@ using namespace std::string_literals;
 
 namespace vitejte {
 
+void VitejteDataSaver::saveOrUpdate(const Patient &patient) {
+  if (isSaved(patient)) {
+    updateVisit(patient);
+  } else {
+    saveVisit(patient);
+  }
+}
+
 PostgresConnectionInfo::PostgresConnectionInfo(const toml::table &src)
     : user(getOrThrow<std::string>(src, "user")), password(getOrThrow<std::string>(src, "password")),
       host(getOrThrow<std::string>(src, "host")), port(getOrThrow<uint16_t>(src, "port")),
@@ -56,20 +64,17 @@ pqxx::work PostgresSaver::makeTransaction() {
 
 std::unique_ptr<VitejteDataSaver> createDataSaver(SaverType type, toml::table &config) {
   switch (type) {
-    case SaverType::postgres:
+    case SaverType::postgres: {
       auto postgresConfig = config["postgres"];
       if (!postgresConfig.is_table()) { throw std::runtime_error("postgres config missing"); }
+
       return std::make_unique<PostgresSaver>(PostgresConnectionInfo(*postgresConfig.as_table()));
+    }
+    case SaverType::mock: return std::make_unique<MockSaver>();
   }
   throw std::logic_error("Saver type not implemented");
 }
-void saveOrUpdate(VitejteDataSaver &saver, const Patient &patient) {
-  if (saver.isSaved(patient)) {
-    saver.updateVisit(patient);
-  } else {
-    saver.saveVisit(patient);
-  }
-}
+
 int runSavingTest(VitejteDataSaver &saver) {
   logger->log(spdlog::level::debug, "Running test");
   try {
@@ -89,7 +94,7 @@ int runSavingTest(VitejteDataSaver &saver) {
     rawPatient.language = "ces";
     rawPatient.cardType = static_cast<int>(vitejte::Patient::CardType::Insurance);
     const auto patient1 = vitejte::Patient{rawPatient};
-    vitejte::saveOrUpdate(saver, patient1);
+    saver.saveOrUpdate(patient1);
 
     rawPatient.id = 24545454;
     rawPatient.registrationTime = 0;
@@ -106,11 +111,11 @@ int runSavingTest(VitejteDataSaver &saver) {
     rawPatient.language = "ces";
     rawPatient.cardType = static_cast<int>(vitejte::Patient::CardType::Insurance);
     auto patient2 = vitejte::Patient{rawPatient};
-    vitejte::saveOrUpdate(saver, patient2);
+    saver.saveOrUpdate(patient2);
 
     rawPatient.state = static_cast<int>(vitejte::Patient::State::Cleared);
     patient2 = vitejte::Patient{rawPatient};
-    vitejte::saveOrUpdate(saver, patient2);
+    saver.saveOrUpdate(patient2);
 
   } catch (pqxx::sql_error const &e) {
     logger->log(spdlog::level::err, "SQL error: {}, query: {}", e.what(), e.query());
@@ -121,4 +126,11 @@ int runSavingTest(VitejteDataSaver &saver) {
   }
   return 0;
 }
+void MockSaver::saveVisit(const Patient &patient) { logger->log(spdlog::level::debug, "MockSaver::saveVisit"); }
+void MockSaver::updateVisit(const Patient &patient) { logger->log(spdlog::level::debug, "MockSaver::updateVisit"); }
+bool MockSaver::isSaved(const Patient &patient) {
+  logger->log(spdlog::level::debug, "MockSaver::isSaved");
+  return false;
+}
+
 }// namespace vitejte

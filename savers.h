@@ -16,7 +16,18 @@ class VitejteDataSaver {
   virtual void saveVisit(const Patient &patient) = 0;
   virtual void updateVisit(const Patient &patient) = 0;
   [[nodiscard]] virtual bool isSaved(const Patient &patient) = 0;
+
+  void saveOrUpdate(const Patient &patient);
   virtual ~VitejteDataSaver() = default;
+};
+
+class MockSaver : public VitejteDataSaver {
+ public:
+  MockSaver() = default;
+  void saveVisit(const Patient &patient) override;
+  void updateVisit(const Patient &patient) override;
+  bool isSaved(const Patient &patient) override;
+
 };
 
 struct PostgresConnectionInfo {
@@ -51,7 +62,7 @@ class PostgresSaver : public VitejteDataSaver {
 
 void saveOrUpdate(VitejteDataSaver &saver, const Patient &patient);
 
-enum class SaverType { postgres, none };
+enum class SaverType { postgres, mock, none };
 
 std::unique_ptr<VitejteDataSaver> createDataSaver(SaverType type, toml::table &config);
 

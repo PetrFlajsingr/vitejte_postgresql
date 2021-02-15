@@ -9,8 +9,8 @@ namespace vitejte {
 #pragma pack(push, 1)
 struct RawPatient {
   int id;
-  double registrationTime;
-  double clearanceTime;
+  const char *registrationTime;
+  const char *clearanceTime;
   const char *titlePre;
   const char *name;
   const char *lastName;
@@ -42,9 +42,6 @@ using FncFreeString = __stdcall void(char *&);
 using FncFreeStringArray = __stdcall void(char **&, int);
 using PtrFncFreeString = FncFreeString *;
 using PtrFncFreeStringArray = FncFreeStringArray *;
-
-using FncDateTimeAsString = __stdcall int(double, char*&);
-using PtrFncDateTimeAsString = FncDateTimeAsString*;
 
 using FncFindDevices = __stdcall int(CommHandle, char **&, int &);
 using FncSetDevice = __stdcall int(CommHandle, char *);
