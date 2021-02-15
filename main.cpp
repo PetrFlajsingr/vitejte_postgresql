@@ -97,12 +97,15 @@ int main(int argc, char *argv[]) {
         fmt::print("{}", args);
         return 3;
     }
-  } catch (pqxx::sql_error const &e) {
+  } catch (const pqxx::sql_error &e) {
     logger->log(spdlog::level::err, "SQL error: {}, query: {}", e.what(), e.query());
     return 2;
-  } catch (std::exception const &e) {
+  } catch (const std::exception &e) {
     logger->log(spdlog::level::err, "Error: {}", e.what());
     return 1;
+  } catch (...) {
+    logger->log(spdlog::level::err, "Unknown error");
+    return -1;
   }
   return 0;
 }
