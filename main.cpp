@@ -18,7 +18,6 @@ using namespace std::string_literals;
 
 void signal_handler(int signal) {
   logger->log(spdlog::level::critical, "Signal received: {}", signal);
-  std::terminate();
 }
 
 enum class AppMode { Devices, Test, Normal, InvalidMode };
@@ -59,6 +58,7 @@ int run(bool test, vitejte::SaverType saverType, const std::filesystem::path &ex
   return 0;
 }
 
+
 void listAndSelectDevice(const std::filesystem::path &exeFolder) {
   if (const auto selectedDevice = listDevices(); selectedDevice.has_value()) {
     auto config = toml::table{};
@@ -74,7 +74,6 @@ void listAndSelectDevice(const std::filesystem::path &exeFolder) {
 }
 
 int main(int argc, char *argv[]) {
-
   const auto exeFolder = getExeFolder(argv[0]);
 
   auto args = createArgumentParser();

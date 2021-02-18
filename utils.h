@@ -28,6 +28,10 @@ inline std::filesystem::path getExeFolder(std::string_view exePath) {
   return result;
 }
 
+inline date::year_month_day getToday() {
+  return date::year_month_day{date::floor<date::days>(std::chrono::system_clock::now())};
+}
+
 inline date::hh_mm_ss<std::chrono::milliseconds> delphiTimeToTimeOfDay(const std::string &time) {
   using namespace std::string_literals;
   const auto hours = std::chrono::hours(static_cast<unsigned>(std::atoi(time.substr(0, 2).c_str())));
@@ -39,16 +43,23 @@ inline date::hh_mm_ss<std::chrono::milliseconds> delphiTimeToTimeOfDay(const std
 inline date::year_month_day delphiDateToYearMonthDay(const std::string &date) {
   using namespace std::string_literals;
   const auto day = date::day(static_cast<unsigned>(std::atoi(date.substr(0, "dd"s.size()).c_str())));
-  const auto month = date::month(static_cast<unsigned>(std::atoi(date.substr("dd/"s.size(), "mm"s.size()).c_str())));
-  const auto year = date::year(static_cast<unsigned>(std::atoi(date.substr("dd/mm/"s.size(), "yyyy"s.size()).c_str())));
+  const auto month = date::month(static_cast<unsigned>(std::atoi(date.substr("dd."s.size(), "mm"s.size()).c_str())));
+  const auto year = date::year(static_cast<unsigned>(std::atoi(date.substr("dd.mm."s.size(), "yyyy"s.size()).c_str())));
   return year / month / day;
 }
 
 struct DateTime {
   date::year_month_day date{};
   date::hh_mm_ss<std::chrono::milliseconds> time{};
+
+  [[nodiscard]] inline std::string toPostgresString() const {
+    return fmt::format("{}-{}-{} {}:{}:{}", static_cast<int>(date.year()),
+                static_cast<unsigned>(date.month()), static_cast<unsigned>(date.day()),
+                time.hours().count(), time.minutes().count(), time.seconds().count());
+  }
+
   inline friend std::ostream &operator<<(std::ostream &os, const DateTime &dateTime) {
-    os << fmt::format("{}/{}/{} {}:{}", static_cast<int>(dateTime.date.year()),
+    os << fmt::format("{}.{}.{} {}:{}:{}", static_cast<int>(dateTime.date.year()),
                       static_cast<unsigned>(dateTime.date.month()), static_cast<unsigned>(dateTime.date.day()),
                       dateTime.time.hours().count(), dateTime.time.minutes().count(), dateTime.time.seconds().count());
     return os;
@@ -57,8 +68,17 @@ struct DateTime {
 
 inline DateTime delphiDateTimeToDateTime(const std::string &dateTime) {
   using namespace std::string_literals;
-  return DateTime{delphiDateToYearMonthDay(dateTime.substr(0, "dd/mm/yyyy"s.size())),
-                  delphiTimeToTimeOfDay(dateTime.substr("dd/mm/yyyy "s.size(), "hh:mm:ss"s.size()))};
+  return DateTime{delphiDateToYearMonthDay(dateTime.substr(0, "dd.mm.yyyy"s.size())),
+                  delphiTimeToTimeOfDay(dateTime.substr("dd.mm.yyyy "s.size(), "hh:mm:ss"s.size()))};
 }
+
+inline const char *ptrIfNotEmpty(const std::string &str) {
+  return str.empty() ? nullptr : str.c_str();
+}
+
+inline std::string defaultIfEmpty(std::string_view str, std::string_view def) {
+  return str.empty() ? std::string(def) : std::string(str);
+}
+
 
 #endif//VITEJTE_POSTGRESQL_SERVICE__UTILS_H

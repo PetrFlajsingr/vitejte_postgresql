@@ -38,28 +38,54 @@ PostgresSaver::PostgresSaver(const PostgresConnectionInfo &info) : connection(in
 void PostgresSaver::saveVisit(const Patient &patient) {
   logger->log(spdlog::level::info, "Saving patient visit");
   auto transaction = makeTransaction();
-  transaction.exec_prepared("insert", patient.getId(), patient.getName() + " " + patient.getLastName());
+  auto clearanceTime = patient.getClearanceTime().starts_with("30.12.1899") ? "" : patient.getClearanceTime();
+  if (!clearanceTime.empty()) {
+    clearanceTime = delphiDateTimeToDateTime(patient.getClearanceTime()).toPostgresString();
+  }
+  const auto registrationTime = delphiDateTimeToDateTime(patient.getRegistrationTime()).toPostgresString();
+  transaction.exec_prepared(
+      "insert", patient.getId(), registrationTime, ptrIfNotEmpty(clearanceTime), ptrIfNotEmpty(patient.getTitlePre()),
+      ptrIfNotEmpty(patient.getTitlePost()), ptrIfNotEmpty(patient.getName()), ptrIfNotEmpty(patient.getLastName()),
+      ptrIfNotEmpty(patient.getRc()), ptrIfNotEmpty(patient.getZp()), patient.getDuvod(), patient.getIdFronty(),
+      patientStateToString(patient.getState()), patientCardTypeToString(patient.getCardType()));
+
   transaction.commit();
-  logger->log(spdlog::level::trace, "Transaction comit");
+  logger->log(spdlog::level::trace, "Transaction commit");
 }
 
 void PostgresSaver::updateVisit(const Patient &patient) {
   logger->log(spdlog::level::info, "Updating patient visit");
+  const auto todayLimitStr = lastMidnightAsStr();
+  auto clearanceTime = patient.getClearanceTime().starts_with("30.12.1899") ? "" : patient.getClearanceTime();
+  if (!clearanceTime.empty()) {
+    clearanceTime = delphiDateTimeToDateTime(patient.getClearanceTime()).toPostgresString();
+  }
+
   auto transaction = makeTransaction();
-  transaction.exec_prepared("update", patient.getName() + " " + patient.getLastName(), patient.getId());
+  transaction.exec_prepared("update", ptrIfNotEmpty(clearanceTime), patientStateToString(patient.getState()),
+                            ptrIfNotEmpty(patient.getName()), ptrIfNotEmpty(patient.getLastName()),
+                            ptrIfNotEmpty(patient.getRc()), ptrIfNotEmpty(patient.getZp()), patient.getDuvod(),
+                            todayLimitStr, patient.getId());
   transaction.commit();
-  logger->log(spdlog::level::trace, "Transaction comit");
+  logger->log(spdlog::level::trace, "Transaction commit");
 }
 
 bool PostgresSaver::isSaved(const Patient &patient) {
   auto transaction = makeTransaction();
-  auto result = transaction.exec_prepared("select", patient.getId());
+  const auto todayLimitStr = lastMidnightAsStr();
+  auto result = transaction.exec_prepared("select", todayLimitStr, patient.getId());
   return !result.empty();
 }
 
 pqxx::work PostgresSaver::makeTransaction() {
   logger->log(spdlog::level::trace, "Creating transaction");
   return pqxx::work{connection};
+}
+std::string PostgresSaver::lastMidnightAsStr() {
+  using namespace std::chrono_literals;
+  const auto today = getToday();
+  const auto dateTime = DateTime{today, date::hh_mm_ss<std::chrono::milliseconds>{0h + 0min + 0s}};
+  return dateTime.toPostgresString();
 }
 
 std::unique_ptr<VitejteDataSaver> createDataSaver(SaverType type, toml::table &config) {

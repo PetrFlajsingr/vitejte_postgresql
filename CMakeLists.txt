@@ -12,6 +12,7 @@ set(SOURCES
         Service.cpp
         DeviceFinder.cpp
         list_devices.cpp
+        include/date/tz.cpp
         )
 
 set(HEADERS

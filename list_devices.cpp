@@ -39,7 +39,7 @@ std::optional<std::string> listDevices() {
 
   const auto devices = devFuture.get();
 
-  logger->log(spdlog::level::trace, "Vyhledavani dokonceno, pocet nalezenych zarizeni: {}", devices.size());
+  logger->log(spdlog::level::info, "Vyhledavani dokonceno, pocet nalezenych zarizeni: {}", devices.size());
 
   auto table = tabulate::Table();
   table.format().font_style({tabulate::FontStyle::bold}).font_align(tabulate::FontAlign::left);

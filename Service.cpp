@@ -11,11 +11,11 @@
 #include "range/v3/view/filter.hpp"
 #include "range/v3/view/transform.hpp"
 #include "range/v3/view/zip.hpp"
-#include <algorithm>
-#include <range/v3/range/conversion.hpp>
-#include <csignal>
-#include <toml++/toml.h>
 #include "utils.h"
+#include <algorithm>
+#include <csignal>
+#include <range/v3/range/conversion.hpp>
+#include <toml++/toml.h>
 
 namespace vitejte {
 
@@ -35,16 +35,11 @@ Service::Service(toml::table &config, std::unique_ptr<VitejteDataSaver> saver) :
 }
 
 void Service::onPatientsChanged() {
-  logger->log(spdlog::level::trace, "Patients changed");
-  const auto changedPatients = compareAndGetChangedPatients();
-  for (const auto &patient : changedPatients) {
-    logger->log(spdlog::level::debug, "{}\n", patient);
-    auto ss = std::stringstream{};
-    ss <<  delphiDateTimeToDateTime(patient.getRegistrationTime());
-    const auto dateStr = ss.str();
-    logger->log(spdlog::level::debug, "{}\n", dateStr);
-  }
-  saveOrUpdatePatients(changedPatients);
+  try {
+    logger->log(spdlog::level::trace, "Patients changed");
+    const auto changedPatients = compareAndGetChangedPatients();
+    saveOrUpdatePatients(changedPatients);
+  } catch (const std::exception &e) { logger->log(spdlog::level::err, e.what()); }
 }
 
 void Service::onError(const std::string &message) {
@@ -81,9 +76,7 @@ void Service::run() {
   std::cin >> tmp;
 }
 void Service::saveOrUpdatePatients(const std::vector<Patient> &patients) {
-  std::ranges::for_each(patients, [this] (const auto &patient) {
-    saver->saveOrUpdate(patient);
-  });
+  std::ranges::for_each(patients, [this](const auto &patient) { saver->saveOrUpdate(patient); });
 }
 
 }// namespace vitejte
